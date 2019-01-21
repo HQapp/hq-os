@@ -22,4 +22,6 @@ rsync
 htop
 man-db
 policykit-1
-ssh-import-id
+python3
+python3-venv 
+python3-zip
