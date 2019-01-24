@@ -24,4 +24,4 @@ man-db
 policykit-1
 python3
 python3-venv 
-python3-zip
+python3-pip
