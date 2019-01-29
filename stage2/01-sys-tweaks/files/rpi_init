@@ -28,21 +28,12 @@ EOF
 ####################################################
 
 echo "HQapp - Initializing the Home Assistant installation " >> /var/log/hq-install.log
-sudo apt-get update
-sudo apt-get update -y
+apt-get update
+apt-get upgrade -y
 
-sudo useradd -rm homeassistant -G dialout,gpio
-cd /srv
-sudo mkdir homeassistant
-sudo chown homeassistant:homeassistant homeassistant
-
-sudo -u homeassistant -H -s
-cd /srv/homeassistant
-python3 -m venv .
-source bin/activate
-sudo python3 -m pip install wheel
-sudo python3 -m pip install --index-url https://test.pypi.org/simple hq-app
-deactivate
+useradd -rm homeassistant -G dialout,gpio
+python3 -m pip install aiohttp_cors
+python3 -m pip install --index-url https://test.pypi.org/simple hq-app
 echo "HQapp - installation of Home Assistant installation complete" >> /var/log/hq-install.log
 
 echo "Setting up the auto-start configuration for Home Assistant" >> /var/log/hq-install.log
@@ -56,18 +47,21 @@ After=network-online.target
 [Service]
 Type=simple
 User=%i
-ExecStart=/srv/homeassistant/bin/hass -c "/home/homeassistant/.homeassistant"
+ExecStart=/usr/local/bin/hass
 
 [Install]
 WantedBy=multi-user.target
 
 EOF
 
+echo "Loading new configuration known to daemon" >> /var/log/hq-install.log
+systemctl --system daemon-reload
+
 echo "Enabling the home-assistant service" >> /var/log/hq-install.log
-sudo systemctl enable home-assistant@homeassistant
+systemctl enable home-assistant@homeassistant
 
 echo "Starting home-assistant..." >> /var/log/hq-install.log
-sudo systemctl start home-assistant@homeassistant
+systemctl start home-assistant@homeassistant
 
 
 ####################################################
