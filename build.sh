@@ -150,7 +150,7 @@ export ZIP_FILENAME="${ZIP_FILENAME:-"image_${IMG_DATE}-${IMG_NAME}${IMG_SUFFIX}
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export SCRIPT_DIR="${BASE_DIR}/scripts"
 export WORK_DIR="${WORK_DIR:-"${BASE_DIR}/work/build-${IMG_NAME}"}"
-export DEPLOY_DIR=${DEPLOY_DIR:-"${BASE_DIR}/deploy/${IMG_DATE}-${IMG_NAME}"}
+export DEPLOY_DIR=${DEPLOY_DIR:-"${BASE_DIR}/deploy/"}
 export LOG_FILE="${WORK_DIR}/build.log"
 
 export FIRST_USER_NAME=${FIRST_USER_NAME:-pi}
