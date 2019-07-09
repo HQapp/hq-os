@@ -33,7 +33,8 @@ apt-get upgrade -y
 
 useradd -rm homeassistant -G dialout,gpio
 python3 -m pip install aiohttp_cors
-python3 -m pip install --index-url https://test.pypi.org/simple hq-app
+# python3 -m pip install --index-url https://test.pypi.org/simple hq-app
+python3 -m pip install homeassistant
 echo "HQapp - installation of Home Assistant installation complete" >> /var/log/hq-install.log
 
 echo "Setting up the auto-start configuration for Home Assistant" >> /var/log/hq-install.log
