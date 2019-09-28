@@ -1,0 +1,77 @@
+#!/bin/bash
+
+cat <<\EOF > /etc/rc.local
+#!/bin/sh -e
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+
+# Print the IP address
+_IP=$(hostname -I) || true
+if [ "$_IP" ]; then
+  printf "My IP address is %s\n" "$_IP"
+fi
+
+exit 0
+EOF
+
+####################################################
+#  !!! DO NOT CHANGE ANYTHING ABOVE THIS LINE !!!  #
+####################################################
+
+echo "HQapp - Initializing the Home Assistant installation " >> /var/log/hq-install.log
+apt-get update
+apt-get upgrade -y
+
+useradd -rm homeassistant -G dialout,gpio
+python3 -m pip install aiohttp_cors
+# python3 -m pip install --index-url https://test.pypi.org/simple hq-app
+python3 -m pip install homeassistant
+echo "HQapp - installation of Home Assistant installation complete" >> /var/log/hq-install.log
+
+echo "Setting up the auto-start configuration for Home Assistant" >> /var/log/hq-install.log
+
+cat <<\EOF > /etc/systemd/system/home-assistant@homeassistant.service
+
+[Unit]
+Description=Home Assistant
+After=network-online.target
+
+[Service]
+Type=simple
+User=%i
+ExecStart=/usr/local/bin/hass
+
+[Install]
+WantedBy=multi-user.target
+
+EOF
+
+echo "Loading new configuration known to daemon" >> /var/log/hq-install.log
+systemctl --system daemon-reload
+
+echo "Enabling the home-assistant service" >> /var/log/hq-install.log
+systemctl enable home-assistant@homeassistant
+
+echo "Starting home-assistant..." >> /var/log/hq-install.log
+systemctl start home-assistant@homeassistant
+
+
+####################################################
+#  !!! DO NOT CHANGE ANYTHING BELOW THIS LINE !!!  #
+####################################################
+
+rm /boot/rpi_init
+
+source /etc/rc.local
+exit 0
+
+
