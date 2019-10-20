@@ -9,12 +9,14 @@ limit=30
 retry=0
 
 #Don't bother to run when lo is configured
-if [ "$IFACE" = lo ]; then
-    exit 0
-fi
+# if [ "$IFACE" = lo ]; then
+#     echo "LO is configured. Exiting script... $IFACE" | sudo tee -a $LOG_FILE
+#     exit 0
+# fi
 
 #Only run from ifup
 if [ "$MODE" != start ]; then
+    echo 'Executed from non-start. Exiting script...' | sudo tee -a $LOG_FILE
     exit 0
 fi
 
@@ -55,6 +57,8 @@ if [ ! -e /opt/dataplicity/tuxtunnel/auth ]; then
     echo "Dataplicity will now be installed..." >> $LOG_FILE 2>&1
 
     /bin/sh -c "curl -k $INSTALL_URL" >> $LOG_FILE 2>&1
+
+    source /home/run-hq-init
 
     #Self deletion (cleanup)
     /bin/sh -c "sudo rm /etc/network/if-up.d/mass-install-dp /opt/dataplicity/mass-install-hostname"

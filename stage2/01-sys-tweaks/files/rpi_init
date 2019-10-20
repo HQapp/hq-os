@@ -27,14 +27,42 @@ EOF
 #  !!! DO NOT CHANGE ANYTHING ABOVE THIS LINE !!!  #
 ####################################################
 
-echo "HQapp - Initializing the Home Assistant installation " >> /var/log/hq-install.log
-apt-get update
-apt-get upgrade -y
+# Wait limit for connection and retry counts
+WAIT_LIMIT=30
+CONNECTION_RETRY=0
 
-useradd -rm homeassistant -G dialout,gpio
-python3 -m pip install aiohttp_cors
+# Check for internet connection. Don't even bother running if not connected.
+until ping -c 1 www.google.com > /dev/null ; do
+    sleep 1
+    retry=$(($CONNECTION_RETRY+1))
+    if [ $CONNECTION_RETRY -eq $WAIT_LIMIT ]; then
+        echo "[ERR] HQ | Interface not connected and limit reached... | $(date)" >> /var/log/hq-install.log
+        exit 0
+    fi
+done
+
+echo "HQapp - Initializing the Home Assistant installation " >> /var/log/hq-install.log
+sudo apt-get update
+sudo apt-get upgrade -y
+
+echo "HQapp - Installing Python 3.6 " >> /var/log/hq-install.log
+sudo apt-get -y install build-essential checkinstall
+sudo apt-get -y install libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev libffi-dev python-dev
+
+sudo wget https://www.python.org/ftp/python/3.6.0/Python-3.6.0.tgz -P /usr/src
+sudo mkdir /usr/src/Python-3.6.0
+chmod 755 /usr/src/Python-3.6.0
+sudo tar xzf /usr/src/Python-3.6.0.tgz -C /usr/src/
+
+sudo sh -c 'cd /usr/src/Python-3.6.0 && ./configure' >> /var/log/python-install
+sudo sh -c 'cd /usr/src/Python-3.6.0 && make install' >> /var/log/python-install
+
+sudo python3.6 -V >> /var/log/hq-install.log
+
+sudo useradd -rm homeassistant -G dialout,gpio
+sudo python3.6 -m pip install aiohttp_cors
 # python3 -m pip install --index-url https://test.pypi.org/simple hq-app
-python3 -m pip install homeassistant
+sudo python3.6 -m pip install homeassistant
 echo "HQapp - installation of Home Assistant installation complete" >> /var/log/hq-install.log
 
 echo "Setting up the auto-start configuration for Home Assistant" >> /var/log/hq-install.log
@@ -56,15 +84,16 @@ WantedBy=multi-user.target
 EOF
 
 echo "Loading new configuration known to daemon" >> /var/log/hq-install.log
-systemctl --system daemon-reload
+sudo systemctl --system daemon-reload
 
 echo "Enabling the home-assistant service" >> /var/log/hq-install.log
-systemctl enable home-assistant@homeassistant
+sudo systemctl enable home-assistant@homeassistant
 
 echo "Starting home-assistant..." >> /var/log/hq-install.log
-systemctl start home-assistant@homeassistant
+sudo systemctl start home-assistant@homeassistant
 
-
+echo "Starting HQ Home UI installation..." >> /var/log/hq-install.log
+sudo bash /home/hq-ui-init
 ####################################################
 #  !!! DO NOT CHANGE ANYTHING BELOW THIS LINE !!!  #
 ####################################################
