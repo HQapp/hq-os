@@ -1,18 +1,19 @@
 #!/bin/bash -e
 
-install -m 755 files/resize2fs_once	"${ROOTFS_DIR}/etc/init.d/"
+install -m 755 files/resize2fs_once		"${ROOTFS_DIR}/etc/init.d/"
 
-install -d				"${ROOTFS_DIR}/etc/systemd/system/rc-local.service.d"
-install -m 644 files/ttyoutput.conf	"${ROOTFS_DIR}/etc/systemd/system/rc-local.service.d/"
+install -d								"${ROOTFS_DIR}/etc/systemd/system/rc-local.service.d"
+install -m 644 files/ttyoutput.conf		"${ROOTFS_DIR}/etc/systemd/system/rc-local.service.d/"
 
-install -m 644 files/50raspi		"${ROOTFS_DIR}/etc/apt/apt.conf.d/"
+install -m 644 files/50raspi			"${ROOTFS_DIR}/etc/apt/apt.conf.d/"
 
 install -m 644 files/console-setup   	"${ROOTFS_DIR}/etc/default/"
 
-install -m 755 files/rc.local		"${ROOTFS_DIR}/etc/"
-install -m 755 files/rpi_init           "${ROOTFS_DIR}/boot/"
-install -m 755 files/mass-install-dp "${ROOTFS_DIR}/etc/network/if-up.d/"
-install -m 755 files/hq-ui-init "${ROOTFS_DIR}/etc/network/if-up.d/"
+install -m 755 files/rc.local		 	"${ROOTFS_DIR}/etc/"
+install -m 755 files/rpi_init        	"${ROOTFS_DIR}/boot/"
+install -m 755 files/mass-install-dp 	"${ROOTFS_DIR}/etc/network/if-up.d/"
+install -m 755 files/hq-ui-init 	 	"${ROOTFS_DIR}/home/"
+install -m 755 files/github-config		"${ROOTFS_DIR}/home/"
 
 on_chroot << EOF
 systemctl disable hwclock.sh
