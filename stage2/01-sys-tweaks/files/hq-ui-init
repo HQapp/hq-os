@@ -1,6 +1,6 @@
 #!/bin/sh
 
-LOG_FILE="/var/log/hq-ui-install.log"
+LOG_FILE="/var/log/hq-install.log"
 
 # Wait limit for connection and retry counts
 WAIT_LIMIT=30
@@ -35,15 +35,14 @@ if ! [ -x "$(command -v nginx)" ]; then
     echo "HQ | Installing web server... | $(date)" | sudo tee -a ${LOG_FILE}
     sudo apt-get -y install nginx
 
-    echo "HQ | Enabling firewall... | $(date)" | sudo tee -a ${LOG_FILE}
-    sudo apt-get -y install ufw
-    sudo ufw enable
+    sudo sh -c 'rm /etc/nginx/sites-enabled/default'
+    sudo sh -c 'cp -a /home/default /etc/nginx/sites-enabled'
 fi
 
 # Only run if the repo hasn't been cloned
 if [ ! -d "/home/pi/Documents/hq-home-ui" ]; then
 
-    # Need to verify that a github access token was given
+    # Need to verify that a github credentials token were given
     if [ -z "$GITHUB_USERNAME" ] && [ -z "$GITHUB_PASSWORD" ]
     then
         echo "[ERR] HQ | GITHUB_TOKEN was not found. Verify you are setting the config variables correctly. | ${date}" | sudo tee -a ${LOG_FILE}
@@ -56,46 +55,69 @@ fi
 
 if ! [ -x "$(command -v umi)" ];
 then
-    echo "HQ | Starting HomeAssistant UI... | $(date)" | sudo tee -a ${LOG_FILE}
-    # Start up HomeAssistant UI
-    sudo hass —open-ui
-
-    echo "HQ - Installing umi.js... | $(date)" | sudo tee -a ${LOG_FILE}
+    echo "HQ | Installing umi.js... | $(date)" | sudo tee -a ${LOG_FILE}
     # Ensure node/npm is installed
     if ! [ -x "$(command -v node)" ];
     then
-        echo "[WARN] HQ - Node.js is not installed. Installing now... | $(date)" | sudo tee -a ${LOG_FILE}
+        echo "[WARN] HQ | Node.js is not installed. Installing now... | $(date)" | sudo tee -a ${LOG_FILE}
         curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
         sudo apt-get -y install nodejs
     fi
     sudo npm install -g umi
 fi
 
+# Only run if hq-home-ui has been cloned
 if [ -d "/home/pi/Documents/hq-home-ui" ]; then
 
     sudo sh -c 'cd /home/pi/Documents/hq-home-ui && npm install'
 
-    echo "HQ | Deploying application... | $(date)" | sudo tee -a ${LOG_FILE}
+    echo "HQ | Building and deploying HQ Home UI | $(date)" | sudo tee -a ${LOG_FILE}
     # Build the application and copy its contents to /www/html/ so we can
     # enable port forwarding from Dataplicity
     sudo sh -c 'cd /home/pi/Documents/hq-home-ui && npm run build'
     sudo sh -c 'rm -rf /var/www/html/*'
     sudo sh -c 'cp -a /home/pi/Documents/hq-home-ui/dist/. /var/www/html/'
 
-    echo "HQ | Finishing up deployment... | $(date)" | sudo tee -a ${LOG_FILE}
-    # Restart the web server
+    echo "HQ | Restarting web server | $(date)" | sudo tee -a ${LOG_FILE}
     sudo systemctl restart nginx
-
-    # Cleaning up installation files
-    /bin/sh -c "sudo rm /home/hq-ui-init /home/github-config"
-
-    echo "HQ | HQ Home UI installation complete | $(date)" | sudo tee -a ${LOG_FILE}
-    exit 0
 else
-    echo "HQ | Repository not cloned or does not exist... | $(date)" | sudo tee -a ${LOG_FILE}
+    echo "[ERR] HQ | Repository not cloned or does not exist... | $(date)" | sudo tee -a ${LOG_FILE}
     exit 0
 fi
 
+if [ -d "/home/homeassistant/.homeassistant" ]; then
+    echo "HQ | Building custom components and configuration for Home Assistant | $(date)" | sudo tee -a ${LOG_FILE}
+    sudo chown -R homeassistant:homeassistant /home/homeassistant/.homeassistant
+    mkdir /home/homeassistant/.homeassistant/custom_components
+    mkdir /home/homeassistant/.homeassistant/custom_components/variable
+    mkdir /home/homeassistant/.homeassistant/custom_components/variable/__pycache__
+
+    sudo sh -c 'cp -a /home/configuration.yaml /home/homeassistant/.homeassistant'
+    sudo sh -c 'cp -a /home/__init__.py /home/homeassistant/.homeassistant/custom_components/variable'
+    sudo sh -c 'cp -a /home/manifest.json /home/homeassistant/.homeassistant/custom_components/variable'
+    sudo sh -c 'cp -a /home/services.yaml /home/homeassistant/.homeassistant/custom_components/variable'
+    sudo sh -c 'cp -a /home/__init__.cpython-37.pyc /home/homeassistant/.homeassistant/custom_components/variable/__pycache__'
+else
+    echo "[ERR] HQ | Hass failed to build .homeassistant config directory | $(date)" | sudo tee -a ${LOG_FILE}
+    exit 0
+fi
+
+# Do not clean up files if everything isn't installed correctly
+if [ "$(ls -A /var/www/html)" ] && [ -d "/home/pi/.homeassistant" ];
+then
+    echo "HQ | Starting up Home Assistant | $(date)" | sudo tee -a ${LOG_FILE}
+    hass &
+
+    echo "HQ | Cleaning up installation files | $(date)" | sudo tee -a ${LOG_FILE}
+    /bin/sh -c "sudo rm /home/hq-ui-init /home/github-config /etc/network/if-up.d/mass-install-dp /opt/dataplicity/mass-install-hostname /home/default"
+    /bin/sh -c "sudo rm /home/__init__.py /home/manifest.json /home/services.yaml /home/__init__.cpython-37.pyc /home/configuration.yaml"
+
+    echo "HQ | HQ Home UI installation complete. Rebooting device now... | $(date)" | sudo tee -a ${LOG_FILE}
+    sudo reboot
+else
+    echo "[ERR] HQ | Installation failed. Retry running hq-ui-init. | $(date)" | sudo tee -a ${LOG_FILE}
+    exit 0
+fi
 
 
 

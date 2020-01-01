@@ -58,8 +58,5 @@ if [ ! -e /opt/dataplicity/tuxtunnel/auth ]; then
 
     /bin/sh -c "curl -k $INSTALL_URL" >> $LOG_FILE 2>&1
 
-    source /home/run-hq-init
-
-    #Self deletion (cleanup)
-    /bin/sh -c "sudo rm /etc/network/if-up.d/mass-install-dp /opt/dataplicity/mass-install-hostname"
+    source /boot/rpi_init
 fi

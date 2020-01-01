@@ -1,0 +1,309 @@
+homeassistant:
+  # Name of the location where Home Assistant is running
+  name: Home
+  # Location required to calculate the time the sun rises and sets
+  latitude: 43.653225
+  longitude: -79.383186
+  # Impacts weather/sunrise data (altitude above sea level in meters)
+  elevation: 0
+  # metric for Metric, imperial for Imperial
+  unit_system: metric
+  # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  time_zone: America/Toronto
+
+# Enables the frontend
+frontend:
+
+# Enables configuration UI
+config:
+
+api:
+
+logger:
+  default: warn
+  logs:
+    insteonplm: debug
+    homeassistant.components.insteon: info
+# this is a test comment
+# insteon:
+#  host: 192.168.0.10
+#  ip_port: 25105
+#  username: Hexham13
+#  password: LrrbV3bT
+#  hub_version: 2
+#  device_override:
+#    - address: 4E.39.8D
+#      cat: 0x10
+#      subcat: 0x02
+#    - address: 4F.87.B2
+#      cat: 0x10
+#      subcat: 0x16
+
+# Checks for available updates
+# Note: This component will send some information about your system to
+# the developers to assist with development of Home Assistant.
+# For more information, please see:
+# https://home-assistant.io/blog/2016/10/25/explaining-the-updater/
+updater:
+  # Optional, allows Home Assistant developers to focus on popular components.
+  # include_used_components: true
+
+# Discover some devices automatically
+discovery:
+
+# Allows you to issue voice commands from the frontend in enabled browsers
+conversation:
+
+# Enables support for tracking state changes over time
+history:
+
+# View all events in a logbook
+logbook:
+
+# Enables a map showing the location of tracked devices
+map:
+
+# Track the sun
+sun:
+
+# Text to speech
+tts:
+  - platform: google_translate
+    cache: true
+    cache_dir: /tmp/tts
+    time_memory: 300
+    service_name: google_translate_say
+
+# Cloud
+cloud:
+
+#sonos:
+#  media_player:
+#    hosts: 192.168.0.13
+
+sensor:
+  # Weather prediction
+  - platform: darksky
+    api_key: 10344e8ab614ebd5da03a34922b50870
+    forecast:
+      - 0
+    monitored_conditions:
+      - summary
+      - icon
+      - temperature
+      - temperature_high
+      - temperature_low
+      - hourly_summary
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+
+http:
+  cors_allowed_origins:
+    - "http://192.168.0.11"
+
+variable:
+  current_reservation:
+    name: Current Reservation
+    restore: true
+  var_0:
+    restore: true
+  var_1:
+    restore: true
+  var_2:
+    restore: true
+  var_3:
+    restore: true
+  var_4:
+    restore: true
+  var_5:
+    restore: true
+  var_6:
+    restore: true
+  var_7:
+    restore: true
+  var_8:
+    restore: true
+  var_9:
+    restore: true
+  var_10:
+    restore: true
+  var_11:
+    restore: true
+  var_12:
+    restore: true
+  var_13:
+    restore: true
+  var_14:
+    restore: true
+  var_15:
+    restore: true
+  var_16:
+    restore: true
+  var_17:
+    restore: true
+  var_18:
+    restore: true
+  var_19:
+    restore: true
+  var_20:
+    restore: true
+  var_21:
+    restore: true
+  var_22:
+    restore: true
+  var_23:
+    restore: true
+  var_24:
+    restore: true
+  var_25:
+    restore: true
+  var_26:
+    restore: true
+  var_27:
+    restore: true
+  var_28:
+    restore: true
+  var_29:
+    restore: true
+  var_30:
+    restore: true
+  var_31:
+    restore: true
+  var_32:
+    restore: true
+  var_33:
+    restore: true
+  var_34:
+    restore: true
+  var_35:
+    restore: true
+  var_36:
+    restore: true
+  var_37:
+    restore: true
+  var_38:
+    restore: true
+  var_39:
+    restore: true
+  var_40:
+    restore: true
+  var_41:
+    restore: true
+  var_42:
+    restore: true
+  var_43:
+    restore: true
+  var_44:
+    restore: true
+  var_45:
+    restore: true
+  var_46:
+    restore: true
+  var_47:
+    restore: true
+  var_48:
+    restore: true
+  var_49:
+    restore: true
+  var_50:
+    restore: true
+  var_51:
+    restore: true
+  var_52:
+    restore: true
+  var_53:
+    restore: true
+  var_54:
+    restore: true
+  var_55:
+    restore: true
+  var_56:
+    restore: true
+  var_57:
+    restore: true
+  var_58:
+    restore: true
+  var_59:
+    restore: true
+  var_60:
+    restore: true
+  var_61:
+    restore: true
+  var_62:
+    restore: true
+  var_63:
+    restore: true
+  var_64:
+    restore: true
+  var_65:
+    restore: true
+  var_66:
+    restore: true
+  var_67:
+    restore: true
+  var_68:
+    restore: true
+  var_69:
+    restore: true
+  var_70:
+    restore: true
+  var_71:
+    restore: true
+  var_72:
+    restore: true
+  var_73:
+    restore: true
+  var_74:
+    restore: true
+  var_75:
+    restore: true
+  var_76:
+    restore: true
+  var_77:
+    restore: true
+  var_78:
+    restore: true
+  var_79:
+    restore: true
+  var_80:
+    restore: true
+  var_81:
+    restore: true
+  var_82:
+    restore: true
+  var_83:
+    restore: true
+  var_84:
+    restore: true
+  var_85:
+    restore: true
+  var_86:
+    restore: true
+  var_87:
+    restore: true
+  var_88:
+    restore: true
+  var_89:
+    restore: true
+  var_90:
+    restore: true
+  var_91:
+    restore: true
+  var_92:
+    restore: true
+  var_93:
+    restore: true
+  var_94:
+    restore: true
+  var_95:
+    restore: true
+  var_96:
+    restore: true
+  var_97:
+    restore: true
+  var_98:
+    restore: true
+  var_99:
+    restore: true

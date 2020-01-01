@@ -14,7 +14,6 @@ raspberrypi-sys-mods
 pi-bluetooth
 apt-listchanges
 usb-modeswitch
-apt-transport-https
 libpam-chksshpwd
 rpi-update
 libmtp-runtime
@@ -26,3 +25,10 @@ wpagui
 python3
 python3-pip
 python3-sqlalchemy
+ssh-import-id
+rng-tools
+ethtool
+vl805fw
+ntfs-3g
+pciutils
+rpi-eeprom
