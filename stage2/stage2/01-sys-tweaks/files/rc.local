@@ -1,8 +1,0 @@
-#!/bin/bash
-source /boot/rpi_init
-cp -v /boot/mass-install-dp /etc/network/if-up.d/
-chmod +x /etc/network/if-up.d/mass-install-dp
-rm /boot/mass-install-dp
-source /boot/hq-ui-init
-rm /boot/hq-ui-init
-exit 0
