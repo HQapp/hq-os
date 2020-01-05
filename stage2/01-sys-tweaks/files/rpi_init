@@ -26,18 +26,44 @@ EOF
 ####################################################
 #  !!! DO NOT CHANGE ANYTHING ABOVE THIS LINE !!!  #
 ####################################################
+# Log files
+HQ_INSTALL_LOG="/var/log/hq-install.log"
+DEPENDENCY_LOG="/var/log/hq-dependency-install.log"
 
-echo "HQapp - Initializing the Home Assistant installation " >> /var/log/hq-install.log
-apt-get update
-apt-get upgrade -y
+# Wait limit for connection and retry counts
+WAIT_LIMIT=30
+CONNECTION_RETRY=0
 
-useradd -rm homeassistant -G dialout,gpio
-python3 -m pip install aiohttp_cors
-# python3 -m pip install --index-url https://test.pypi.org/simple hq-app
-python3 -m pip install homeassistant
-echo "HQapp - installation of Home Assistant installation complete" >> /var/log/hq-install.log
+# Check for internet connection. Don't even bother running if not connected.
+until ping -c 1 www.google.com > /dev/null ; do
+    sleep 1
+    retry=$(($CONNECTION_RETRY+1))
+    if [ $CONNECTION_RETRY -eq $WAIT_LIMIT ]; then
+        echo "[ERR] HQ | Interface not connected and limit reached... | $(date)" >> ${HQ_INSTALL_LOG}
+        exit 0
+    fi
+done
 
-echo "Setting up the auto-start configuration for Home Assistant" >> /var/log/hq-install.log
+echo "HQ | Initializing the Home Assistant installation | $(date)" >> ${HQ_INSTALL_LOG}
+sudo apt-get update
+sudo apt-get upgrade -y
+
+echo "HQ | Installing dependencies | $(date)" >> ${HQ_INSTALL_LOG}
+sudo apt-get -y install build-essential checkinstall >> ${DEPENDENCY_LOG}
+sudo apt-get -y install libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev libffi-dev python-dev >> ${DEPENDENCY_LOG}
+
+echo "HQ | Installing Python 3.7 | $(date)" >> ${HQ_INSTALL_LOG}
+sudo apt-get install -y python3.7 python3.7-dev python3.7-venv libffi-dev libssl-dev >> ${DEPENDENCY_LOG}
+sudo useradd -rm homeassistant -G dialout,gpio,i2c
+
+echo "HQ | Installing Home Assistant | $(date)" >> ${HQ_INSTALL_LOG}
+python3.7 -m pip install aiohttp_cors >> ${DEPENDENCY_LOG}
+python3.7 -m pip install wheel >> ${DEPENDENCY_LOG}
+python3.7 -m pip install homeassistant >> ${DEPENDENCY_LOG}
+
+echo "HQ | Installation of Home Assistant complete | $(date)" >> ${HQ_INSTALL_LOG}
+
+echo "HQ | Setting up the auto-start configuration for Home Assistant | $(date)" >> ${HQ_INSTALL_LOG}
 
 cat <<\EOF > /etc/systemd/system/home-assistant@homeassistant.service
 
@@ -47,24 +73,25 @@ After=network-online.target
 
 [Service]
 Type=simple
-User=%i
-ExecStart=/usr/local/bin/hass
+User=homeassistant
+ExecStart=/usr/local/bin/hass -c "/home/homeassistant/.homeassistant"
 
 [Install]
 WantedBy=multi-user.target
 
 EOF
 
-echo "Loading new configuration known to daemon" >> /var/log/hq-install.log
-systemctl --system daemon-reload
+echo "HQ | Loading new configuration known to daemon | $(date)" >> ${HQ_INSTALL_LOG}
+sudo systemctl --system daemon-reload
 
-echo "Enabling the home-assistant service" >> /var/log/hq-install.log
-systemctl enable home-assistant@homeassistant
+echo "HQ | Enabling the home-assistant service | $(date)" >> ${HQ_INSTALL_LOG}
+sudo systemctl enable home-assistant@homeassistant
 
-echo "Starting home-assistant..." >> /var/log/hq-install.log
-systemctl start home-assistant@homeassistant
+echo "HQ | Starting home-assistant service... | $(date)" >> ${HQ_INSTALL_LOG}
+sudo systemctl start home-assistant@homeassistant
 
-
+echo "HQ | Starting HQ Home UI installation... | $(date)" >> ${HQ_INSTALL_LOG}
+source /home/hq-ui-init
 ####################################################
 #  !!! DO NOT CHANGE ANYTHING BELOW THIS LINE !!!  #
 ####################################################
